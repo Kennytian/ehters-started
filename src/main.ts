@@ -1,4 +1,5 @@
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
+import type { ContractReceipt } from "ethers";
 
 class EtherStarted {
   constructor() {}
@@ -31,7 +32,7 @@ class EtherStarted {
     if (!this.busd) {
       await this.connectContract();
     }
-    const balance =   await this.busd.blanceOf("0xd35ac571e4a5AA3d067C87E528415E7ea2612439");
+    const balance: BigNumber = await this.busd.balanceOf("0xd35ac571e4a5AA3d067C87E528415E7ea2612439");
     console.log("balance is:", balance.toString());
   }
 
@@ -41,7 +42,7 @@ class EtherStarted {
     }
 
     const tx = await this.busd.transfer("0xd35ac571e4a5AA3d067C87E528415E7ea2612439", "1000000000000000000");
-    const wait = await tx.wait();
+    const wait: ContractReceipt = await tx.wait();
 
     console.log(wait);
     console.log(wait.transactionHash);

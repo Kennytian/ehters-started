@@ -105,3 +105,6 @@ dist
 
 # IDE
 .idea
+
+# lock files
+pnpm-lock.yaml
