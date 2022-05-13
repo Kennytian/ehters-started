@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>ethers 实战 - ethers action</title>
+
+  <script src="https://cdn.ethers.io/lib/ethers-5.4.umd.min.js" type="application/javascript"></script>
+  <script>
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+
+    async function getWalletAddress() {
+      await provider.send("eth_requestAccounts", []);
+
+      const signer = provider.getSigner();
+      return await signer.getAddress();
+    }
+
+    async function getCurrentBlock() {
+      return await provider.getBlockNumber();
+    }
+
+    async function getBalance(wallet) {
+      const balance = await provider.getBalance(wallet);
+      return ethers.utils.formatEther(balance);
+    }
+
+    async function setSignMessage() {
+      const signer = provider.getSigner();
+      const userSignature = await signer.signMessage("一些自定义消息，Some custom message");
+      setInnerText("userSignature", `Your signature is: ${userSignature}`);
+    }
+
+    function setInnerText(elementId, text) {
+      document.getElementById(elementId).innerText = text;
+    }
+
+    const usdc = {
+      address: "xxx",
+      abi: [
+        "function gimmeSome() external",
+        "function balanceOf(address _owner) public view returns (uint256 balance)",
+        "function transfer(address _to, uint256 _value) public returns (bool success)"
+      ]
+    };
+
+    async function mintUsdc(address) {
+      const signer = provider.getSigner();
+      const usdcContract = new ethers.Contract(address, usdc.abi, signer);
+      const tx = await usdcContract.gimmeSome({gasPrice: 0});
+      console.log(`Transaction hash: ${tx.hash}`);
+      const receipt = await tx.wait();
+      console.log(`Transaction confirmed in block ${receipt.blockNumber}`);
+      console.log(`Gas used: ${receipt.gasUsed.toString()}`);
+    }
+
+    (async function() {
+      const [userAddress, currentBlock] = await Promise.all([
+        getWalletAddress(),
+        getCurrentBlock()
+      ]);
+
+      const [userBalance] = await Promise.all([
+        getBalance(userAddress),
+        // mintUsdc(userAddress),
+      ]);
+
+      setInnerText("wallet", `Your wallet is: ${userAddress}`);
+      setInnerText("currentBlock", `Your currentBlock is: ${currentBlock}`);
+      setInnerText("userBalance", `Your getBalance is: ${userBalance}`);
+      // setInnerText('userSignature', `Your signature is: ${userSignature}`);
+    })();
+  </script>
+</head>
+<body>
+<div id="wallet">...</div>
+<div id="currentBlock">...</div>
+<div id="userBalance">...</div>
+<div id="userSignature" onclick="setSignMessage()">click me to send Signature</div>
+</body>
+</html>
